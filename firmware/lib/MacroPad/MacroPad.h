@@ -1,7 +1,6 @@
 #pragma once
 
-#include "HID.h"
-
+#include <stdint.h>
 namespace MacroPad
 {
     enum Modifiers : uint8_t
@@ -262,35 +261,148 @@ namespace MacroPad
 
     enum class MediaKeys : uint8_t
     {
-        KEY_NONE = 0x00,
+        NONE = 0x00,
         // USB media codes
-        KEY_SCAN_NEXT = 0x01,
-        KEY_SCAN_PREV = 0x02,
-        KEY_STOP = 0x04,
-        KEY_EJECT = 0x08,
-        KEY_PLAYPAUSE = 0x10,
-        KEY_MUTE = 0x20,
-        KEY_VOL_UP = 0x40,
-        KEY_VOL_DOWN = 0x80,
+        SCAN_NEXT = 0x01,
+        SCAN_PREV = 0x02,
+        STOP = 0x04,
+        EJECT = 0x08,
+        PLAYPAUSE = 0x10,
+        MUTE = 0x20,
+        VOL_UP = 0x40,
+        VOL_DOWN = 0x80,
+    };
+
+    enum class SystemKeys : uint8_t
+    {
+        NONE = 0x00,
+        SYSTEM_POWER = 0x1,
+        SYSTEM_SLEEP = 0x2,
+        SYSTEM_WAKE = 0x4,
+    };
+
+    enum class ApplicationLaunchKeys : uint8_t
+    {
+        NONE = 0x00,
+        // LAUNCH_BUTTON_CONFIGURATION_TOOL,
+        // PROGRAMMABLE_BUTTON_CONFIGURATION,
+        // CONSUMER_CONTROL_CONFIGURATION,
+        // WORD_PROCESSOR,
+        TEXT_EDITOR = 0x01,
+        // SPREADSHEET,
+        GRAPHICS_EDITOR = 0x02,
+        // PRESENTATION_APP,
+        // DATABASE_APP,
+        // EMAIL_READER,
+        // NEWSREADER,
+        // VOICEMAIL,
+        // CONTACTS_ADDRESS_BOOK,
+        // CALENDAR_SCHEDULE,
+        // TASK_PROJECT_MANAGER,
+        // LOG_JOURNAL_TIMECARD,
+        // CHECKBOOK_FINANCE,
+        CALCULATOR = 0x04,
+        // A_V_CAPTURE_PLAYBACK,
+        // LOCAL_MACHINE_BROWSER,
+        // LAN_WAN_BROWSER,
+        INTERNET_BROWSER = 0x08,
+        // REMOTE_NETWORKING_ISP_CONNECT,
+        // NETWORK_CONFERENCE,
+        // NETWORK_CHAT,
+        // TELEPHONY_DIALER,
+        // LOGON,
+        // LOGOFF,
+        // LOGON_LOGOFF,
+        // TERMINAL_LOCK_SCREENSAVER,
+        // CONTROL_PANEL = 0x08,
+        // COMMAND_LINE_PROCESSOR_RUN,
+        // PROCESS_TASK_MANAGER,
+        // SELECT_TASK_APPLICATION,
+        // NEXT_TASK_APPLICATION,
+        // PREVIOUS_TASK_APPLICATION,
+        // PREEMPTIVE_HALT_TASK_APPLICATION,
+        // INTEGRATED_HELP_CENTER,
+        DOCUMENTS = 0x10,
+        // THESAURUS,
+        // DICTIONARY,
+        // DESKTOP,
+        // SPELL_CHECK,
+        // GRAMMAR_CHECK,
+        // WIRELESS_STATUS,
+        // KEYBOARD_LAYOUT,
+        // VIRUS_PROTECTION,
+        // ENCRYPTION,
+        // SCREEN_SAVER,
+        ALARMS = 0x20,
+        CLOCK = 0x40,
+        FILE_BROWSER = 0x80,
+        // POWER_STATUS,
+        // IMAGE_BROWSER = 0x80,
+        // AUDIO_BROWSER,
+        // MOVIE_BROWSER,
+        // DIGITAL_RIGHTS_MANAGER,
+        // DIGITAL_WALLET,
+        // DIGITAL_WALLET,
+        // INSTANT_MESSAGING_,
+        // OEM_FEATURES__TIPS_TUTORIAL_BROWSER,
+        // OEM_HELP,
+        // ONLINE_COMMUNITY,
+        // ENTERTAINMENT_CONTENT_BROWSER,
+        // ONLINE_SHOPPING_BROWSER,
+        // SMARTCARD_INFORMATION_HELP,
+        // MARKET_MONITOR_FINANCE_BROWSER,
+        // CUSTOMIZED_CORPORATE_NEWS_BROWSER,
+        // ONLINE_ACTIVITY_BROWSER,
+        // RESEARCH_SEARCH_BROWSER,
+        // AUDIO_PLAYER,
+    };
+
+    enum ReportType
+    {
+        None = 0,
+        Keyboard = 2,
+        Media = 3,
+        ApplicationLaunch = 4,
+        SystemKey = 5
+    };
+
+    class Report
+    {
+    public:
+        Report()
+            : reportType(ReportType::None),
+              data{0, 0}
+        {
+        }
+        Report(Modifiers const modifiers, Scancodes const scancodes)
+            : reportType(ReportType::Keyboard),
+              data{static_cast<uint8_t>(modifiers), static_cast<uint8_t>(scancodes)}
+        {
+        }
+        
+        Report(MediaKeys const mediaKey)
+            : reportType(ReportType::Media),
+              data{static_cast<uint8_t>(mediaKey), 0}
+        {
+        }
+        Report(SystemKeys const systemKey)
+            : reportType(ReportType::SystemKey),
+              data{static_cast<uint8_t>(systemKey), 0}
+        {
+        }
+        Report(ApplicationLaunchKeys const applicationLaunchKey)
+            : reportType(ReportType::ApplicationLaunch),
+              data{static_cast<uint8_t>(applicationLaunchKey), 0}
+        {
+        }
+
+        ReportType const reportType;
+        uint8_t const data[2];
     };
 
     class MacroPad final
     {
     public:
-        enum ReportType
-        {
-            Keyboard,
-            Media
-        };
-
-        struct Report
-        {
-            ReportType reportType;
-            Modifiers modifiers;
-            Scancodes scancodes[6];
-            MediaKeys mediaKey;
-        };
-
         MacroPad(void);
         void begin(void) const;
         void end(void) const;

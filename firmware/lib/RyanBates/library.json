@@ -1,0 +1,9 @@
+{
+    "name": "RYANBATES_6KEY_2ROTARY_BOARD",
+    "version": "0.1",
+    "dependencies": {
+        "Encoder": "*",
+        "EasyButton": "*",
+        "Keypad": "*"
+    }
+}
