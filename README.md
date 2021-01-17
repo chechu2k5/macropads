@@ -1,5 +1,5 @@
 # Description
-* Firware for a DIY macropad
+* Firmware for a DIY macropad
 
 # Why ?
 * You can never have enough keys
