@@ -7,7 +7,7 @@
 #if defined(RYANBATES_6KEY_2ROTARY_BOARD)
 
 // ----- LAYOUT ----
-//     A  M
+//   K K A M
 //   R B B R
 //   B B B B
 // L
@@ -26,7 +26,7 @@ uint8_t const COLS = 4;
 #elif defined(RYANBATES_13KEY_2ROTARY_BOARD)
 
 // ----- LAYOUT ----
-//     A  M
+//   K K A M
 //   R B B R
 //   B B B B
 //   B B B B
@@ -38,6 +38,7 @@ uint8_t const COLS = 4;
 // M: Mode button
 // R: Rotary Encoder (or) Button
 // B: Button
+// K: Key (Button)
 // L: LED
 
 uint8_t const ROWS = 4;
@@ -61,8 +62,8 @@ namespace RyanBates
         QuickFlip
     };
 
-    uint8_t const Mode1 = A2;
-    uint8_t const Mode2 = A3;
+    uint8_t const LED_MODE0 = A2;
+    uint8_t const LED_MODE1 = A3;
     uint8_t const NUM_BUTTONS = ROWS * COLS;
     uint8_t const NUM_ENCODERS = 2;
 

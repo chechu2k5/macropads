@@ -7,101 +7,16 @@
 
 using namespace MacroPad;
 
-namespace RyanBates
-{
-
 #if defined(RYANBATES_6KEY_2ROTARY_BOARD)
-
-    Report const longPressReports[] = {
-        {},                                   // LHS encoder button
-        {},                                   // Top row button 1
-        {},                                   // Top row button 2
-        {},                                   // RHS encoder button
-        {},                                   // Bottom row button 1
-        {},                                   // Bottom row button 2
-        {},                                   // Bottom row button 3
-        {Modifiers::LMETA, Scancodes::KEY_L}, // Bottom row button 4
-    };
-
-    Report const keyReports[] = {
-        {MediaKeys::MUTE},                     // LHS encoder button
-        {Modifiers::NONE, Scancodes::KEY_F22}, // Top row button 1
-        {Modifiers::NONE, Scancodes::KEY_F23}, // Top row button 2
-        {MediaKeys::PLAYPAUSE},                // RHS encoder button
-        {Modifiers::NONE, Scancodes::KEY_F13}, // Bottom row button 1
-        {Modifiers::NONE, Scancodes::KEY_F14}, // Bottom row button 2
-        {Modifiers::NONE, Scancodes::KEY_F15}, // Bottom row button 3
-        {Modifiers::NONE, Scancodes::KEY_F16}, // Bottom row button 4
-    };
-
-    uint8_t rowPins[ROWS] = {4, 5};
-    uint8_t colPins[COLS] = {6, 7, 8, 9};
-
-    Encoder encoders[] = {
-        {10, 16}, // the LEFT encoder (encoder A)
-        {14, 15}  // the RIGHT encoder (encoder B)
-    };
-
+#include "6K2R_V1.h"
 #elif defined(RYANBATES_13KEY_2ROTARY_BOARD)
-
-    Report const longPressReports[] = {
-        {},                                   // Row 4 Button 1
-        {},                                   // Row 4 Button 2
-        {},                                   // Row 4 Button 3
-        {},                                   // Row 4 Button 4
-        {Modifiers::LMETA, Scancodes::KEY_L}, // Row 4 Button 5
-
-        {}, // Row 3 Button 1
-        {}, // Row 3 Button 2
-        {}, // Row 3 Button 3
-        {}, // Row 3 Button 4
-
-        {}, // LHS Rotary Button
-        {}, // Row 2 Button 2
-        {}, // Row 2 Button 3
-        {}, // RHS Rotary Buttons
-
-        {}, // Row 1 Button 1 => KEY14
-        {}, // Row 1 Button 1 => KEY15
-        {}, // Row 1 Button 1 => KEY16
-    };
-
-    Report const keyReports[] = {
-        {Modifiers::NONE, Scancodes::KEY_F13}, // Row 4 Button 1
-        {Modifiers::NONE, Scancodes::KEY_F14}, // Row 4 Button 2
-        {Modifiers::NONE, Scancodes::KEY_F15}, // Row 4 Button 3
-        {Modifiers::NONE, Scancodes::KEY_F16}, // Row 4 Button 4
-        {},                                    // Row 4 Button 5
-
-        {}, // Row 3 Button 1
-        {}, // Row 3 Button 2
-        {}, // Row 3 Button 3
-        {}, // Row 3 Button 4
-
-        {MediaKeys::SCAN_PREV}, // LHS Rotary Button
-        {MediaKeys::MUTE},      // Row 2 Button 2
-        {MediaKeys::PLAYPAUSE}, // Row 2 Button 3
-        {MediaKeys::SCAN_NEXT}, // RHS Rotary Buttons
-
-        {}, // Row 1 Button 1 => KEY14
-        {}, // Row 1 Button 1 => KEY15
-        {}, // Row 1 Button 1 => KEY16
-    };
-
-    uint8_t rowPins[ROWS] = {2, 3, 4, 5};
-    uint8_t colPins[COLS] = {6, 7, 8, 9};
-
-    Encoder encoders[] = {
-        {14, 15}, // the LEFT encoder (encoder A)
-        {10, 16}  // the RIGHT encoder (encoder B)
-    };
-
+#include "13K2R_V04.h"
 #else
-
 #error "No or invalid board selected!"
-
 #endif
 
+namespace RyanBates
+{
     struct ButtonState
     {
         bool pressed = false;
@@ -137,12 +52,9 @@ namespace RyanBates
 
         if (modeButton.isReleased())
         {
+            bool changed = true;
             switch (modeActions)
             {
-            case ModeActions::None:
-            {
-            }
-            break;
             case ModeActions::Next:
             {
                 prevMode = currentMode;
@@ -163,18 +75,63 @@ namespace RyanBates
             }
             break;
 
+            case ModeActions::None:
             default:
-                break;
+            {
+                changed = false;
+            }
+            break;
             }
 
             modeActions = ModeActions::None;
+
+            if (changed)
+            {
+                Report const *press;
+                Report const *longPress;
+
+                switch (currentMode)
+                {
+                case 1:
+                {
+                    press = Mode1::pressReports;
+                    longPress = Mode1::longPressReports;
+                }
+                break;
+
+                case 2:
+                {
+                    press = Mode2::pressReports;
+                    longPress = Mode2::longPressReports;
+                }
+                break;
+
+                case 3:
+                {
+                    press = Mode3::pressReports;
+                    longPress = Mode3::longPressReports;
+                }
+                break;
+
+                default:
+                case 0:
+                {
+                    press = Mode0::pressReports;
+                    longPress = Mode0::longPressReports;
+                }
+                break;
+                }
+
+                memcpy(pressReports, press, sizeof(pressReports));
+                memcpy(longPressReports, longPress, sizeof(longPressReports));
+            }
         }
 
         uint8_t const b0 = currentMode & 1;
         uint8_t const b1 = (currentMode >> 1) & 1;
 
-        digitalWrite(Mode1, b0);
-        digitalWrite(Mode2, b1);
+        digitalWrite(LED_MODE0, b0);
+        digitalWrite(LED_MODE1, b1);
     }
 
     void updateEncoder(MacroPad::MacroPad const &macroPad, Encoder &encoder, int32_t &currentPosition, Report const *const encoderReports)
@@ -213,7 +170,7 @@ namespace RyanBates
                     }
                     else if (buttonState.pressed)
                     {
-                        macroPad.send(keyReports[i]);
+                        macroPad.send(pressReports[i]);
                         macroPad.releaseAll();
                     }
 
@@ -225,11 +182,14 @@ namespace RyanBates
 
     void init()
     {
-        pinMode(Mode1, OUTPUT);
-        digitalWrite(Mode1, LOW);
+        pinMode(LED_MODE0, OUTPUT);
+        digitalWrite(LED_MODE0, LOW);
 
-        pinMode(Mode2, OUTPUT);
-        digitalWrite(Mode2, LOW);
+        pinMode(LED_MODE1, OUTPUT);
+        digitalWrite(LED_MODE1, LOW);
+
+        memcpy(pressReports, Mode0::pressReports, sizeof(pressReports));
+        memcpy(longPressReports, Mode0::longPressReports, sizeof(longPressReports));
 
         modeButton.begin();
         modeButton.onPressed([]() {
