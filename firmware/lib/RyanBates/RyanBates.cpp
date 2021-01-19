@@ -188,6 +188,8 @@ namespace RyanBates
         pinMode(LED_MODE1, OUTPUT);
         digitalWrite(LED_MODE1, LOW);
 
+        pinMode(LED_BUILTIN_TX, INPUT);
+
         memcpy(pressReports, Mode0::pressReports, sizeof(pressReports));
         memcpy(longPressReports, Mode0::longPressReports, sizeof(longPressReports));
 
